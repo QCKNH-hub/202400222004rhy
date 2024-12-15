@@ -1,0 +1,95 @@
+﻿package main
+
+import (
+    "bufio"
+    "fmt"
+    "os"
+    "strconv"
+    "strings"
+    "time"
+)
+
+// 获取指定日期是星期几（0=星期日, 6=星期六）
+func getDayOfWeek(year, month, day int) time.Weekday {
+    return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.Local).Weekday()
+}
+
+// 输出星期几的中文表示
+func printDayOfWeek(dayOfWeek time.Weekday) {
+    weekdays := []string{"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"}
+    fmt.Println(weekdays[dayOfWeek])
+}
+
+// 打印指定月份的月历
+func printMonthCalendar(year, month int) {
+    firstDayOfMonth := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local).Weekday()
+    daysInMonth := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.Local).Day()
+
+    // 打印月历标题和表头
+    fmt.Printf("  %d年%d月\n", year, month)
+    fmt.Println("日 一 二 三 四 五 六")
+
+    // 打印月历内容
+    var buffer strings.Builder
+    for i := 0; i < int(firstDayOfMonth); i++ {
+        buffer.WriteString("   ")
+    }
+    for day := 1; day <= daysInMonth; day++ {
+        buffer.WriteString(fmt.Sprintf("%2d ", day))
+        if (day+int(firstDayOfMonth)-1)%7 == 0 || day == daysInMonth {
+            fmt.Println(buffer.String())
+            buffer.Reset()
+        }
+    }
+    if buffer.Len() > 0 {
+        fmt.Println(buffer.String()) // 打印最后一行（如果有的话）
+    }
+}
+
+func main() {
+    reader := bufio.NewReader(os.Stdin)
+    for {
+        // 提示用户选择功能
+        fmt.Println("请选择功能：")
+        fmt.Println("1. 输入日期，输出星期几")
+        fmt.Println("2. 输入年月，输出月历")
+        fmt.Println("3. 退出")
+        fmt.Print("请输入选择（1/2/3）：")
+        choice, _ := reader.ReadString('\n')
+        choice = strings.TrimSpace(choice)
+
+        // 根据用户选择执行功能
+        var year, month, day int
+        switch choice {
+        case "1":
+            fmt.Print("请输入日期（年 月 日）：")
+            _, err := fmt.Fscan(reader, &year, &month, &day)
+            if err != nil {
+                fmt.Println("输入错误，请重新输入。")
+                continue
+            }
+            printDayOfWeek(getDayOfWeek(year, month, day))
+        case "2":
+            fmt.Print("请输入年月（年 月）：")
+            _, err := fmt.Fscan(reader, &year, &month)
+            if err != nil {
+                fmt.Println("输入错误，请重新输入。")
+                continue
+            }
+            printMonthCalendar(year, month)
+        case "3":
+            fmt.Println("退出程序。")
+            return
+        default:
+            fmt.Println("无效选择，请重新输入。")
+        }
+
+        // 提示用户是否继续
+        fmt.Print("是否继续？（y/n）：")
+        continueChoice, _ := reader.ReadString('\n')
+        continueChoice = strings.TrimSpace(continueChoice)
+        if continueChoice != "y" && continueChoice != "Y" {
+            break
+        }
+    }
+}

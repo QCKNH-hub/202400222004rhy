@@ -1,0 +1,93 @@
+#include <stdio.h>
+#include <time.h>
+
+// 获取指定日期是星期几（0=星期日, 6=星期六）
+int get_day_of_week(int year, int month, int day) {
+    struct tm date = {0};
+    date.tm_year = year - 1900;
+    date.tm_mon = month - 1;
+    date.tm_mday = day;
+    mktime(&date); // 标准化时间结构
+    return date.tm_wday;
+}
+
+// 输出星期几的中文表示
+void print_day_of_week(int day_of_week) {
+    const char *weekdays[] = {"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"};
+    printf("%s\n", weekdays[day_of_week]);
+}
+
+// 获取指定月份的天数
+int get_days_in_month(int year, int month) {
+    struct tm date = {0};
+    date.tm_year = year - 1900;
+    date.tm_mon = month - 1;
+    date.tm_mday = 32; // 设置一个大于任何月份天数的值
+    mktime(&date); // 这将标准化日期，将tm_mday设置为上一个月的最后一天
+    return date.tm_mday;
+}
+
+// 打印指定月份的月历
+void print_month_calendar(int year, int month) {
+    int days_in_month = get_days_in_month(year, month);
+    int start_day_of_week = get_day_of_week(year, month, 1);
+
+    // 打印月历标题和表头
+    printf("  %d年%d月\n", year, month);
+    printf("日 一 二 三 四 五 六\n");
+
+    // 打印月历内容
+    for (int i = 0; i < start_day_of_week; i++) {
+        printf("   ");
+    }
+    for (int day = 1; day <= days_in_month; day++) {
+        printf("%2d ", day);
+        if ((day + start_day_of_week - 1) % 7 == 0 || day == days_in_month) {
+            printf("\n");
+        }
+    }
+}
+
+int main() {
+    int year, month, day;
+    char choice, continue_choice;
+
+    do {
+        // 提示用户选择功能
+        printf("请选择功能：\n");
+        printf("1. 输入日期，输出星期几\n");
+        printf("2. 输入年月，输出月历\n");
+        printf("3. 退出\n");
+        printf("请输入选择（1/2/3）：");
+        scanf(" %c", &choice); // 注意%c前的空格，用于跳过任何空白字符
+
+        // 清除输入缓冲区中的换行符（如果有的话）
+        while (getchar() != '\n');
+
+        // 根据用户选择执行功能
+        if (choice == '1') {
+            printf("请输入日期（年 月 日）：");
+            scanf("%d %d %d", &year, &month, &day);
+            int day_of_week = get_day_of_week(year, month, day);
+            print_day_of_week(day_of_week);
+        } else if (choice == '2') {
+            printf("请输入年月（年 月）：");
+            scanf("%d %d", &year, &month);
+            print_month_calendar(year, month);
+        } else if (choice == '3') {
+            printf("退出程序。\n");
+        } else {
+            printf("无效选择，请重新输入。\n");
+        }
+
+        // 提示用户是否继续
+        printf("是否继续？（y/n）：");
+        scanf(" %c", &continue_choice); // 使用已经声明的 continue_choice
+
+        // 再次清除输入缓冲区中的换行符（如果有的话）
+        while (getchar() != '\n');
+
+    } while (continue_choice == 'y' || continue_choice == 'Y');
+
+    return 0;
+}
